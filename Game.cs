@@ -112,6 +112,7 @@ namespace Match3
                     if (OkButtonRect.Contains((int)x, (int)y))
                     {
                         State = GameState.MainMenu;
+                        Board.Restart();
                     }
                     break;
                 case GameState.Playing:

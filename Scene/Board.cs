@@ -45,6 +45,17 @@ namespace Match3.Scene
             }
         }
 
+        public void Restart()
+        {
+            Score = 0;
+            State = BoardState.SpawningTiles;
+            _tileSwapper.ClearSelection();
+            foreach (var e in Entities)
+            {
+                e.Destroy();
+            }
+            Entities.Clear();
+        }
         public TileSlot GetSlotFromScreenPosition(Vector2 screenPos)
         {
             var worldPos = screenPos / (TILE_PIXEL_SIZE / TileSlot.TILE_WORLD_SIZE);
@@ -68,16 +79,6 @@ namespace Match3.Scene
                 entity.DrawInternal();
             }
             Graphics.Pop();
-
-#if DEBUG
-            Graphics.SetColor(Color.White);
-            Graphics.Print(
-                $"Entities:{Entities.Count}\n" +
-                $"State:{State}\n" +
-                $"MatchType:{GetSlotFromScreenPosition(Mouse.GetPosition())?.Tile?.MatchTypeName}\n" +
-                $"Score:{Score}", 0, TILE_PIXEL_SIZE * RowCount);
-            Graphics.Circle(DrawMode.Line, Mouse.GetPosition(), 10);
-#endif
         }
         public void Update(float deltaTime)
         {
@@ -255,7 +256,8 @@ namespace Match3.Scene
                             _tileSwapper.UserSelectTile(slot.Tile);
                         }
                     }
-#if DEBUG
+
+                    // for debug
                     else if (button == 1)
                     {
                         Entities.Add(new LineBonus(slot, 1, 0, BasicTile.DEFAULT_FALL_SPEED * 2));
@@ -268,7 +270,6 @@ namespace Match3.Scene
                     {
                         slot.Tile?.Match();
                     }
-#endif
                 }
             }
         }
