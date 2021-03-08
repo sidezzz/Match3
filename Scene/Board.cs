@@ -170,6 +170,8 @@ namespace Match3.Scene
         {
             var result = 0;
 
+            var bonusSpawnedSlots = new List<TileSlot>();
+            var countedMatches = new List<TileSlot>();
             var totalMatches = new List<List<TileSlot>>();
             foreach (var matcher in Matchers)
             {
@@ -178,8 +180,12 @@ namespace Match3.Scene
                 {
                     foreach (var slot in match)
                     {
-                        slot.Tile.Match();
-                        result++;
+                        if (!countedMatches.Contains(slot))
+                        {
+                            slot.Tile.Match();
+                            result++;
+                            countedMatches.Add(slot);
+                        }
                     }
 
                     var lineMatcher = matcher as LineMatcher;
@@ -187,36 +193,27 @@ namespace Match3.Scene
                     {
                         if (match.Count > 3)
                         {
-                            var createdByUser = false;
-                            foreach (var intersect in match.Intersect(_tileSwapper.SelectedTiles.Select(t => t.Slot)))
+                            var bonusSpawnSlot = match.Intersect(_tileSwapper.SelectedTiles.Select(t => t.Slot)).FirstOrDefault();
+                            if (bonusSpawnSlot == null)
                             {
-                                if (match.Count > 4)
-                                {
-                                    SpawnTile(new BombTile(intersect.Tile as ColoredTile), intersect);
-                                }
-                                else
-                                {
-                                    SpawnTile(new LineTile(intersect.Tile as ColoredTile, lineMatcher.XDir, lineMatcher.YDir), intersect);
-                                }
-                                createdByUser = true;
+                                bonusSpawnSlot = match.LastOrDefault();
                             }
 
-                            if (!createdByUser)
+                            if (!bonusSpawnedSlots.Contains(bonusSpawnSlot))
                             {
-                                var spawnSlot = match.LastOrDefault();
                                 if (match.Count > 4)
                                 {
-                                    SpawnTile(new BombTile(spawnSlot.Tile as ColoredTile), spawnSlot);
+                                    SpawnTile(new BombTile(bonusSpawnSlot.Tile as ColoredTile), bonusSpawnSlot);
                                 }
                                 else
                                 {
-                                    SpawnTile(new LineTile(spawnSlot.Tile as ColoredTile, lineMatcher.XDir, lineMatcher.YDir), spawnSlot);
+                                    SpawnTile(new LineTile(bonusSpawnSlot.Tile as ColoredTile, lineMatcher.XDir, lineMatcher.YDir), bonusSpawnSlot);
                                 }
+                                bonusSpawnedSlots.Add(bonusSpawnSlot);
                             }
                         }
                     }
                 }
-
 
                 totalMatches.AddRange(matches);
             }
@@ -226,7 +223,7 @@ namespace Match3.Scene
                 for (int j = i + 1; j < totalMatches.Count; j++)
                 {
                     var intersectSlot = totalMatches[i].Intersect(totalMatches[j]).FirstOrDefault();
-                    if (intersectSlot != null)
+                    if (intersectSlot != null && !bonusSpawnedSlots.Contains(intersectSlot))
                     {
                         SpawnTile(new BombTile(intersectSlot.Tile as ColoredTile), intersectSlot);
                     }

@@ -3,6 +3,7 @@ using Love;
 using Match3.Matchers;
 using Match3.Misc;
 using Match3.Scene;
+using Match3.Tiles;
 
 namespace Match3
 {
